@@ -14,7 +14,8 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 ---
 
 ## 🏗 Cấu trúc repo
-mi-rag/
+<pre>
+  mi-rag/
 ├─ README.md
 ├─ requirements.txt / pyproject.toml
 ├─ .env.example
@@ -32,3 +33,4 @@ mi-rag/
 ├─ logs/
 │ └─ runs/
 └─ notebooks/ # demo, sanity check
+</pre>
