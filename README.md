@@ -17,7 +17,7 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 <pre>
   mi-rag/
 ├─ README.md
-├─ requirements.txt / pyproject.toml
+├─ requirements.txt
 ├─ .env.example
 ├─ src/
 │ ├─ dataio/ # load ViOCRVQA, Wikipedia
