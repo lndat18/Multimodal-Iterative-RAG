@@ -49,7 +49,7 @@ Trong đó
     Mẫu biến môi trường (API keys, PATH dữ liệu…). Bạn copy thành `.env` để chạy local, tránh commit secret.
     
 
-** `src/`** – mã nguồn chính
+**`src/`** – mã nguồn chính
 
 - **`src/dataio/`** – nạp & chuẩn hóa dữ liệu
     - `viocrvqa.py`: tải/đọc ViOCRVQA → chuẩn record `{image_path, question, answer, split, meta}`.
@@ -80,18 +80,3 @@ Trong đó
     - `logging.py`: ghi **JSONL** theo stage `ingest/query/answer` vào `logs/runs/…`.
     - `timing.py`: decorator đo thời gian từng bước.
     - `text.py`: chuẩn hóa Unicode, strip, lọc ký tự rác từ OCR.
-
-## `notebooks/` – thử nhanh
-
-- `00_quick_sanity.ipynb`: load 10 mẫu, chạy OCR/YOLO demo.
-- `01_retrieval_demo.ipynb`: thử search visual/text & xem citations.
-
-## `data/` – dữ liệu cục bộ (không commit nặng)
-
-- **`data/viocrvqa/`**
-    
-    Ảnh + file QA (nếu bạn dump ra). Sau khi chạy OCR/Detect, có thể có `visual_kb.jsonl`.
-    
-- **`data/wiki/`**
-    
-    Dữ liệu Wikipedia Vi/En (parquet/jsonl), file `text_kb.jsonl`, `text_kb.faiss`, `text_kb.meta.json`.
