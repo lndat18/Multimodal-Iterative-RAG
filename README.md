@@ -34,3 +34,64 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 │ └─ runs/
 └─ notebooks/ # demo, sanity check
 </pre>
+
+Trong đó
+- **README.md**
+    
+    Trang giới thiệu repo: mục tiêu, cách cài, chạy baseline, roadmap. (Dán bản README mình đã viết cho bạn.)
+    
+- **requirements.txt**
+    
+    Danh sách package để `pip install`. (W1: PaddleOCR, ultralytics, chromadb, faiss, sentence-transformers, FlagEmbedding, datasets, pandas, tqdm…)
+    
+- **.env.example**
+    
+    Mẫu biến môi trường (API keys, PATH dữ liệu…). Bạn copy thành `.env` để chạy local, tránh commit secret.
+    
+
+## `src/` – mã nguồn chính
+
+- **`src/dataio/`** – nạp & chuẩn hóa dữ liệu
+    - `viocrvqa.py`: tải/đọc ViOCRVQA → chuẩn record `{image_path, question, answer, split, meta}`.
+    - `wikipedia.py`: tải Wikipedia Vi/En (HF) → tách `chunk` → lưu JSONL.
+    - `schemas.py`: dataclass/Pydantic schema cho sample, chunk, evidence.
+- **`src/vision/`** – tín hiệu từ ảnh (Visual)
+    - `ocr.py`: gọi PaddleOCR → trả `spans` (text, bbox, conf).
+    - `detect.py`: YOLOv8 → trả `objects` (label, bbox, conf).
+    - `caption.py` *(tùy chọn W2+)*: sinh mô tả ảnh.
+- **`src/kb/`** – dựng Knowledge Base
+    - `build_visual_kb.py`: gom `ocr_text`, `objects` thành 1 doc/ảnh → `data/visual_kb.jsonl`.
+    - `build_text_kb.py`: từ Wikipedia đã chunk → `data/text_kb.jsonl`.
+- **`src/index/`** – lập chỉ mục (vector stores)
+    - `build_index.py`:
+        - Visual KB → **Chroma** (tiện metadata/filter).
+        - Text KB → **FAISS** (nhiều tài liệu, nhanh).
+    - `searchers.py`: hàm `search_visual(query,k)`, `search_text(query,k)` dùng lại khi truy vấn.
+- **`src/retriever/`** – truy xuất + hợp nhất
+    - `embed.py`: load **bge-m3** (embedding).
+    - `fusion.py`: **RRF**/Weighted merge giữa visual & text.
+    - `rerank.py`: **bge-reranker-v2-m3** sắp xếp lại top-N.
+    - `router.py`: nhận biết ngôn ngữ (heuristic/fastText) → route Vi/En.
+    - `planner.py` *(W2+)*: sinh multi-query (paraphrase, sub-qs, pivot EN…).
+- **`src/rag/`** – pipeline trả lời
+    - `baseline.py`: **RAG 1 vòng** (W1) → retrieve (visual+text) → fuse → rerank → in `context + citations`.
+    - `generator.py` *(W3–W4)*: gọi LLM sinh câu trả lời ràng buộc citation.
+- **`src/utils/`** – tiện ích
+    - `logging.py`: ghi **JSONL** theo stage `ingest/query/answer` vào `logs/runs/…`.
+    - `timing.py`: decorator đo thời gian từng bước.
+    - `text.py`: chuẩn hóa Unicode, strip, lọc ký tự rác từ OCR.
+
+## `notebooks/` – thử nhanh
+
+- `00_quick_sanity.ipynb`: load 10 mẫu, chạy OCR/YOLO demo.
+- `01_retrieval_demo.ipynb`: thử search visual/text & xem citations.
+
+## `data/` – dữ liệu cục bộ (không commit nặng)
+
+- **`data/viocrvqa/`**
+    
+    Ảnh + file QA (nếu bạn dump ra). Sau khi chạy OCR/Detect, có thể có `visual_kb.jsonl`.
+    
+- **`data/wiki/`**
+    
+    Dữ liệu Wikipedia Vi/En (parquet/jsonl), file `text_kb.jsonl`, `text_kb.faiss`, `text_kb.meta.json`.
