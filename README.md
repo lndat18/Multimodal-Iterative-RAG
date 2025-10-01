@@ -38,7 +38,7 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 Trong đó
 - **README.md**
     
-    Trang giới thiệu repo: mục tiêu, cách cài, chạy baseline, roadmap. (Dán bản README mình đã viết cho bạn.)
+    Trang giới thiệu repo: mục tiêu, cách cài, chạy baseline, roadmap.
     
 - **requirements.txt**
     
@@ -49,7 +49,7 @@ Trong đó
     Mẫu biến môi trường (API keys, PATH dữ liệu…). Bạn copy thành `.env` để chạy local, tránh commit secret.
     
 
-## `src/` – mã nguồn chính
+** `src/`** – mã nguồn chính
 
 - **`src/dataio/`** – nạp & chuẩn hóa dữ liệu
     - `viocrvqa.py`: tải/đọc ViOCRVQA → chuẩn record `{image_path, question, answer, split, meta}`.
