@@ -7,7 +7,6 @@ Hệ thống **MI-RAG (Multimodal Iterative Retrieval-Augmented Generation)** ch
 - Kết hợp **Visual KB** (OCR, Object, Caption) và **Text KB** (Wikipedia tiếng Việt/Anh, tài liệu nội bộ).
 - Hỗ trợ **router đa ngữ**, **multi-query planner**, **multi-step reasoning**, và **knowledge fusion**.
 - Trả lời kèm **citation** rõ ràng (ảnh, bbox, hoặc đoạn văn bản).
-- Baseline tuần 1: **1 vòng retrieval + rerank + citation logging**.
 
 Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 124k QA).
 
