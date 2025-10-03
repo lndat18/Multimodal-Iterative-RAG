@@ -47,37 +47,37 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 
 ## ⚙️ `src/` – Code chính theo từng công đoạn
 
-### `src/dataio/` – **Nhập dữ liệu**
+## `src/dataio/` – **Nhập dữ liệu**
 - Tải/đọc **ViOCRVQA, Wikipedia (Vi/En)**  
 - Tiền xử lý (clean text, tách trường, chuẩn format)  
 - ✅ Kết quả: dữ liệu có cấu trúc `{question, image_path, ocr_spans, …}`  
 
-### `src/vision/` – **Xử lý ảnh**
+## `src/vision/` – **Xử lý ảnh**
 - **OCR**: lấy text trong ảnh  
 - **Object detection**: tên/box vật thể  
 - **Captioning**: mô tả ảnh  
 - ✅ Kết quả: metadata từ ảnh (ocr text, boxes, labels, caption)  
 
-### `src/kb/` – **Xây dựng Knowledge Base**
+## `src/kb/` – **Xây dựng Knowledge Base**
 - Gom thông tin từ `vision/` (visual) và `dataio/` (text)  
 - **Visual KB**: vector/metadata ảnh, OCR, objects, caption  
 - **Text KB**: đoạn Wiki/docs → chunk + embeddings  
 - ✅ Kết quả: dữ liệu sẵn sàng đưa vào chỉ mục  
 
-### `src/index/` – **Dựng chỉ mục**
+## `src/index/` – **Dựng chỉ mục**
 - Xây **FAISS/Chroma index** cho visual & text (song song)  
 - API: thêm/tìm vector, lưu/đọc index  
 
-### `src/retriever/` – **Truy xuất & xếp hạng**
+## `src/retriever/` – **Truy xuất & xếp hạng**
 - **Dual retriever**: gọi cả visual & text KB → lấy top-k  
 - **Fusion + Rerank**: loại nhiễu, xếp hạng theo BM25/RRF/cross-encoder  
 - ✅ Kết quả: tập ứng viên tốt nhất cho model trả lời  
 
-### `src/rag/` – **Pipeline sinh câu trả lời**
+## `src/rag/` – **Pipeline sinh câu trả lời**
 - Baseline: `OCR + Detect → Embed → Retrieve → Rerank → Generate → Citation`  
 - Gọi retriever, ráp ngữ cảnh, gọi LLM sinh đáp án **có trích dẫn**  
 
-### `src/utils/` – **Tiện ích chung**
+## `src/utils/` – **Tiện ích chung**
 - Logging (ghi thời gian, top-k, rerank score, …)  
 - Config loader (`.env`, YAML)  
 - Hàm tiện ích: seed, timer, …  
@@ -108,14 +108,3 @@ Notebook demo/sanity check:
 
 ---
 
-✨ Với cấu trúc này, bạn có thể dễ dàng mở rộng:  
-- Thêm dataset mới → đặt file vào `data/` + viết loader trong `src/dataio/`  
-- Đổi OCR/detector → `src/vision/`  
-- Thêm nguồn tri thức mới → `src/kb/`  
-- Đổi index (FAISS ↔ Chroma) → `src/index/`  
-- Điều chỉnh fusion/rerank → `src/retriever/`  
-- Tinh chỉnh pipeline → `src/rag/`  
-
----
-
-Bạn có muốn mình viết thêm một **bảng tóm tắt (1 dòng / thư mục)** để cuối README trông “gọn” và tiện nhìn hơn không?
