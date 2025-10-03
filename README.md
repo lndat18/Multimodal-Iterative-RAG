@@ -35,47 +35,83 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 </pre>
 
 Trong đó
-- **README.md**
-    
-    Trang giới thiệu repo: mục tiêu, cách cài, chạy baseline, roadmap.
-    
-- **requirements.txt**
-    
-    Danh sách package để `pip install`. (W1: PaddleOCR, ultralytics, chromadb, faiss, sentence-transformers, FlagEmbedding, datasets, pandas, tqdm…)
-    
-- **.env.example**
-    
-    Mẫu biến môi trường (API keys, PATH dữ liệu…). Bạn copy thành `.env` để chạy local, tránh commit secret.
-    
+Thư mục gốc
 
-**`src/`** – mã nguồn chính
+README.md: “bảng hướng dẫn sử dụng nhanh” – cách cài đặt, cách chạy demo.
 
-- **`src/dataio/`** – nạp & chuẩn hóa dữ liệu
-    - `viocrvqa.py`: tải/đọc ViOCRVQA → chuẩn record `{image_path, question, answer, split, meta}`.
-    - `wikipedia.py`: tải Wikipedia Vi/En (HF) → tách `chunk` → lưu JSONL.
-    - `schemas.py`: dataclass/Pydantic schema cho sample, chunk, evidence.
-- **`src/vision/`** – tín hiệu từ ảnh (Visual)
-    - `ocr.py`: gọi PaddleOCR → trả `spans` (text, bbox, conf).
-    - `detect.py`: YOLOv8 → trả `objects` (label, bbox, conf).
-    - `caption.py` *(tùy chọn W2+)*: sinh mô tả ảnh.
-- **`src/kb/`** – dựng Knowledge Base
-    - `build_visual_kb.py`: gom `ocr_text`, `objects` thành 1 doc/ảnh → `data/visual_kb.jsonl`.
-    - `build_text_kb.py`: từ Wikipedia đã chunk → `data/text_kb.jsonl`.
-- **`src/index/`** – lập chỉ mục (vector stores)
-    - `build_index.py`:
-        - Visual KB → **Chroma** (tiện metadata/filter).
-        - Text KB → **FAISS** (nhiều tài liệu, nhanh).
-    - `searchers.py`: hàm `search_visual(query,k)`, `search_text(query,k)` dùng lại khi truy vấn.
-- **`src/retriever/`** – truy xuất + hợp nhất
-    - `embed.py`: load **bge-m3** (embedding).
-    - `fusion.py`: **RRF**/Weighted merge giữa visual & text.
-    - `rerank.py`: **bge-reranker-v2-m3** sắp xếp lại top-N.
-    - `router.py`: nhận biết ngôn ngữ (heuristic/fastText) → route Vi/En.
-    - `planner.py` *(W2+)*: sinh multi-query (paraphrase, sub-qs, pivot EN…).
-- **`src/rag/`** – pipeline trả lời
-    - `baseline.py`: **RAG 1 vòng** (W1) → retrieve (visual+text) → fuse → rerank → in `context + citations`.
-    - `generator.py` *(W3–W4)*: gọi LLM sinh câu trả lời ràng buộc citation.
-- **`src/utils/`** – tiện ích
-    - `logging.py`: ghi **JSONL** theo stage `ingest/query/answer` vào `logs/runs/…`.
-    - `timing.py`: decorator đo thời gian từng bước.
-    - `text.py`: chuẩn hóa Unicode, strip, lọc ký tự rác từ OCR.
+requirements.txt: danh sách thư viện Python để pip install -r requirements.txt.
+
+.env.example: mẫu biến môi trường (đường dẫn dữ liệu, API key…). Bạn copy thành .env rồi điền giá trị thật.
+
+src/ – Code chính theo từng “công đoạn”
+
+src/dataio/ – Nhập hàng & đóng gói dữ liệu
+
+Code để tải/đọc ViOCRVQA, Wikipedia (Vi/En), tiền xử lý (clean text, tách trường, chuẩn format).
+
+Kết quả: trả về các mẫu dữ liệu có cấu trúc (question, image path, ocr_spans, …) để các bước sau dùng.
+
+src/vision/ – Nhìn ảnh để lấy thông tin
+
+Chạy OCR (lấy text trong ảnh), object detection (tên/box các vật thể), captioning (mô tả ảnh).
+
+Kết quả: sinh ra feature/metadata từ ảnh (ocr text, boxes, labels, caption).
+
+src/kb/ – Xây “kho tri thức”
+
+Dùng thông tin từ vision/ (phần visual) và dataio/ (Wiki, docs – phần text) để build Knowledge Base:
+
+Visual KB: vector/metadata của ảnh, OCR, objects, caption.
+
+Text KB: đoạn văn Wiki, docs đã tách nhỏ (chunks) + embeddings.
+
+Kết quả: dữ liệu đã “đóng thùng” sẵn sàng đưa vào chỉ mục.
+
+src/index/ – Dựng chỉ mục để tìm cho nhanh
+
+Tạo FAISS/Chroma index cho visual và text (tách riêng để truy xuất song song).
+
+Cung cấp API: add/search vectors, lưu/đọc index từ đĩa.
+
+src/retriever/ – Lấy hàng đúng & xếp hạng lại
+
+Dual retriever: gọi cả hai kho (visual & text) để lấy top-k ứng viên.
+
+Fusion (hợp nhất) & Rerank: loại nhiễu, sắp xếp lại theo điểm phù hợp (BM25/RRF/cross-encoder…).
+
+Trả về gói “tài liệu/visual chunks” tốt nhất để model trả lời.
+
+src/rag/ – Dây chuyền lắp ráp câu trả lời
+
+Baseline pipeline: OCR+Detect → Embed → Retrieve song song → Rerank → Generate → Citation.
+
+Gọi retriever, ráp ngữ cảnh, gọi LLM sinh câu trả lời kèm trích dẫn nguồn.
+
+src/utils/ – Dụng cụ & cấu hình chung
+
+logging (ghi thời gian, top-k, điểm rerank…), config loader (đọc .env, YAML), tiện ích (seed, timer…).
+
+data/ – Kho dữ liệu
+
+data/viocrvqa/: ảnh câu hỏi/trả lời, annotation… dùng cho OCR-VQA.
+
+data/wiki/: dump/đoạn văn Wikipedia đã tách và chuẩn hoá (JSONL/Parquet…).
+
+Bạn không commit dữ liệu thật lên git (nặng & riêng tư); chỉ commit script và .env.example.
+
+logs/
+
+logs/runs/: nơi rơi file log mỗi lần chạy (thời gian, thông số, top-k, nguồn trích dẫn, latency…).
+Dùng để debug và so sánh các lần thử.
+
+notebooks/
+
+Notebook demo/sanity check:
+
+test nhanh OCR một ảnh,
+
+thử build 10 mẫu wiki chunks,
+
+gọi retriever lấy top-k,
+
+chạy pipeline end-to-end cho 1–2 câu hỏi.
