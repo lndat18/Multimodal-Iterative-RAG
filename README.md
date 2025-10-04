@@ -13,4 +13,21 @@ Dataset: [ViOCRVQA](https://github.com/qhnhynmm/ViOCRVQA-Dataset) (~28k ảnh, 1
 ---
 
 ## 🏗 Cấu trúc repo
+<pre>
+  mi_rag/
+    ├── env/
+    │   ├── requirements.txt
+    │   └── config.json                 # tham số chung: top_k, num_rounds, paths...
+    ├── data/                           # ảnh/tài liệu thô (visual_raw, texts_raw)
+    ├── indices/                        # FAISS/Chroma lưu sẵn để tái dùng
+    ├── artifacts/                      # checkpoint retriever/reranker (nếu có)
+    ├── logs/                           # jsonl: query, top-k, điểm rerank, thời gian
+    └── notebooks/
+        ├── 00_setup.ipynb              # mount Drive + pip install + kiểm tra GPU + load config
+        ├── 10_build_kb.ipynb           # TẠO KB: OCR/object/caption + tách văn bản
+        ├── 20_index_embed.ipynb        # EMBED + LẬP CHỈ MỤC: Visual KB & Text KB
+        ├── 30_mi_rag.ipynb             # PIPELINE CHÍNH: planner → retrieval (2–3 vòng) → rerank → fusion+citation
+        ├── 40_eval.ipynb               # ĐÁNH GIÁ: Recall@k/MRR/nDCG + EM/F1 + kiểm citation
+        └── 50_demo_colab.ipynb         # DEMO nhanh (Gradio trên Colab)
+</pre>
 
